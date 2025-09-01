@@ -41,6 +41,12 @@ docker build -t ai-study-buddy .
 docker run -p 8501:8501 --env-file .env ai-study-buddy
 ```
 
+## Jenkins for CI
+
+
+## ArgoCD for CD
+
+
 ## Project Structure
 
 ```
