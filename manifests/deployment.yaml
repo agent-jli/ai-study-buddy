@@ -1,26 +1,52 @@
+# Kubernetes Deployment Configuration
+# This file defines how to deploy and run the AI Study Buddy application
+
+# API version for Kubernetes Deployment objects
 apiVersion: apps/v1
+
+# Type of Kubernetes resource - Deployment manages a set of identical pods
 kind: Deployment
+
+# Metadata section - information about this deployment
 metadata:
-  name: llmops-app
+  name: llmops-app  # Name of the deployment (used to identify it in kubectl commands)
+
+# Specification section - defines the desired state of the deployment
 spec:
+  # Number of identical pod replicas to run (for high availability and load distribution)
   replicas: 2
+  
+  # Selector tells the deployment which pods it should manage
+  # It matches pods with the label "app: llmops-app"
   selector:
     matchLabels:
       app: llmops-app
+  
+  # Template defines the pod specification that will be created
   template:
+    # Metadata for the pods that will be created
     metadata:
       labels:
-        app: llmops-app
+        app: llmops-app  # Label that matches the selector above
+    
+    # Specification for the actual pod containers
     spec:
       containers:
-      - name: llmops-app
+      - name: llmops-app  # Name of the container within the pod
+        
+        # Docker image to use - pulled from DockerHub registry
+        # Format: registry/username/repository:tag
         image: dataguru97/studybuddy:v17
+        
+        # Ports that the container exposes
         ports:
-        - containerPort: 8501
+        - containerPort: 8501  # Streamlit default port
+        
+        # Environment variables for the container
         env:
-        - name: GROQ_API_KEY
+        - name: GROQ_API_KEY  # Environment variable name
           valueFrom:
-            secretKeyRef:
-              name: groq-api-secret
-              key: GROQ_API_KEY
+            secretKeyRef:  # Get value from a Kubernetes Secret (secure storage)
+              name: groq-api-secret  # Name of the secret object
+              key: GROQ_API_KEY      # Key within the secret
 

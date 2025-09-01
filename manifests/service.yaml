@@ -1,11 +1,31 @@
+# Kubernetes Service Configuration
+# This file defines how to expose the AI Study Buddy application to network traffic
+
+# API version for Kubernetes Service objects
 apiVersion: v1
+
+# Type of Kubernetes resource - Service provides network access to pods
 kind: Service
+
+# Metadata section - information about this service
 metadata:
-  name: llmops-service
+  name: llmops-service  # Name of the service (used for DNS resolution within cluster)
+
+# Specification section - defines how the service works
 spec:
+  # Selector determines which pods this service will route traffic to
+  # Must match the labels on the pods (defined in deployment.yaml)
   selector:
     app: llmops-app
+  
+  # Port configuration - how traffic flows through the service
   ports:
-    - port: 80
-      targetPort: 8501  # default port for Streamlit
+    - port: 80           # External port that clients connect to
+      targetPort: 8501   # Internal port on the container (Streamlit default)
+      # Traffic flow: Client -> Service:80 -> Pod:8501
+  
+  # Service type determines how it's exposed:
+  # - ClusterIP: Only accessible within cluster (default)
+  # - NodePort: Accessible from outside cluster via node IP:port
+  # - LoadBalancer: Creates external load balancer (cloud providers)
   type: NodePort
