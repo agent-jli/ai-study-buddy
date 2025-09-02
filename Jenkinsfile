@@ -100,9 +100,13 @@ pipeline {
                         git config user.name "agent-jli"
                         git config user.email "liyike1988@gmail.com"
                         
+                        # Force git to see the change by checking status
+                        git status manifests/deployment.yaml
+                        git diff manifests/deployment.yaml
+                        
                         # Add and commit the modified deployment file
                         git add manifests/deployment.yaml
-                        git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
+                        git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
                         
                         # Push back to GitHub main branch
                         git push https://${GIT_USER}:${GIT_PASS}@github.com/agent-jli/ai-study-buddy.git HEAD:main
