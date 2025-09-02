@@ -97,8 +97,8 @@ pipeline {
                         # Add the modified deployment file
                         git add manifests/deployment.yaml
                         
-                        # Commit with a descriptive message
-                        git commit -m "Update image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+                        # Commit with a descriptive message (skip CI to avoid triggering new builds)
+                        git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
                         
                         # Push back to GitHub main branch
                         git push https://${GIT_USER}:${GIT_PASS}@github.com/agent-jli/ai-study-buddy.git HEAD:main
