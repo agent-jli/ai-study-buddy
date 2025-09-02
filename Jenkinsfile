@@ -59,6 +59,7 @@ pipeline {
                     // So Kubernetes can download it later
                     docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_HUB_CREDENTIALS_ID}") {
                         dockerImage.push("${IMAGE_TAG}")
+                        dockerImage.push("latest")  // Also push as latest
                     }
                 }
             }
