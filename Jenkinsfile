@@ -9,13 +9,8 @@
 // =============================================================================
 
 pipeline {
-    // Use Docker agent with kubectl and other k8s tools pre-installed
-    agent {
-        docker {
-            image 'alpine/k8s:1.33.4'
-            args '--user root'
-        }
-    }
+    // Use different agents for different stages
+    agent none
     
     // Environment variables used throughout the pipeline
     // Think of these as "settings" that all stages can access
@@ -35,6 +30,7 @@ pipeline {
         
         // STAGE 1: Get the latest code from GitHub
         stage('Checkout Github') {
+            agent any
             steps {
                 echo 'Checking out code from GitHub...'
                 // Download your latest code from the main branch
@@ -45,6 +41,7 @@ pipeline {
         
         // STAGE 2: Build your app into a Docker container
         stage('Build Docker Image') {
+            agent any
             steps {
                 script {
                     echo 'Building Docker image...'
@@ -57,6 +54,7 @@ pipeline {
         
         // STAGE 3: Upload the container to DockerHub (like GitHub for containers)
         stage('Push Image to DockerHub') {
+            agent any
             steps {
                 script {
                     echo 'Pushing Docker image to DockerHub...'
@@ -72,6 +70,7 @@ pipeline {
         
         // STAGE 4: Update Kubernetes deployment file with new image version
         stage('Update Deployment YAML with New Tag') {
+            agent any
             steps {
                 script {
                     // Replace the old image tag with the new one in deployment.yaml
@@ -85,6 +84,7 @@ pipeline {
 
         // STAGE 5: Save the updated deployment file back to GitHub
         stage('Commit Updated YAML') {
+            agent any
             steps {
                 script {
                     // Use GitHub credentials to push changes back to your repo
@@ -128,6 +128,12 @@ pipeline {
         
         // STAGE 7: Deploy your app to Kubernetes cluster
         stage('Apply Kubernetes & Sync App with ArgoCD') {
+            agent {
+                docker {
+                    image 'alpine/k8s:1.33.4'
+                    args '--user root'
+                }
+            }
             steps {
                 script {
                     // Connect to your Kubernetes cluster using stored credentials
