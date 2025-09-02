@@ -64,79 +64,79 @@ pipeline {
             }
         }
         
-        // // STAGE 4: Update Kubernetes deployment file with new image version
-        // stage('Update Deployment YAML with New Tag') {
-        //     steps {
-        //         script {
-        //             // Replace the old image tag with the new one in deployment.yaml
-        //             // This tells Kubernetes which version of your app to run
-        //             sh """
-        //             sed -i 's|image: dataguru97/studybuddy:.*|image: dataguru97/studybuddy:${IMAGE_TAG}|' manifests/deployment.yaml
-        //             """
-        //         }
-        //     }
-        // }
+        // STAGE 4: Update Kubernetes deployment file with new image version
+        stage('Update Deployment YAML with New Tag') {
+            steps {
+                script {
+                    // Replace the old image tag with the new one in deployment.yaml
+                    // This tells Kubernetes which version of your app to run
+                    sh """
+                    sed -i 's|image: slithice/studybuddy:.*|image: slithice/studybuddy:${IMAGE_TAG}|' manifests/deployment.yaml
+                    """
+                }
+            }
+        }
 
-        // // STAGE 5: Save the updated deployment file back to GitHub
-        // stage('Commit Updated YAML') {
-        //     steps {
-        //         script {
-        //             // Use GitHub credentials to push changes back to your repo
-        //             withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-        //                 sh '''
-        //                 # Configure git with your identity
-        //                 git config user.name "data-guru0"
-        //                 git config user.email "gyrogodnon@gmail.com"
+        // STAGE 5: Save the updated deployment file back to GitHub
+        stage('Commit Updated YAML') {
+            steps {
+                script {
+                    // Use GitHub credentials to push changes back to your repo
+                    withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                        sh '''
+                        # Configure git with your identity
+                        git config user.name "agent-jli"
+                        git config user.email "liyike1988@gmail.com"
                         
-        //                 # Add the modified deployment file
-        //                 git add manifests/deployment.yaml
+                        # Add the modified deployment file
+                        git add manifests/deployment.yaml
                         
-        //                 # Commit with a descriptive message
-        //                 git commit -m "Update image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+                        # Commit with a descriptive message
+                        git commit -m "Update image tag to ${IMAGE_TAG}" || echo "No changes to commit"
                         
-        //                 # Push back to GitHub main branch
-        //                 git push https://${GIT_USER}:${GIT_PASS}@github.com/data-guru0/STUDY-BUDDY-AI.git HEAD:main
-        //                 '''
-        //             }
-        //         }
-        //     }
-        // }
+                        # Push back to GitHub main branch
+                        git push https://${GIT_USER}:${GIT_PASS}@github.com/agent-jli/ai-study-buddy.git HEAD:main
+                        '''
+                    }
+                }
+            }
+        }
         
-        // // STAGE 6: Install tools needed to talk to Kubernetes
-        // stage('Install Kubectl & ArgoCD CLI Setup') {
-        //     steps {
-        //         sh '''
-        //         echo 'installing Kubectl & ArgoCD cli...'
+        // STAGE 6: Install tools needed to talk to Kubernetes
+        stage('Install Kubectl & ArgoCD CLI Setup') {
+            steps {
+                sh '''
+                echo 'installing Kubectl & ArgoCD cli...'
                 
-        //         # Download kubectl (Kubernetes command-line tool)
-        //         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        //         chmod +x kubectl
-        //         mv kubectl /usr/local/bin/kubectl
+                # Download kubectl (Kubernetes command-line tool)
+                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                chmod +x kubectl
+                mv kubectl /usr/local/bin/kubectl
                 
-        //         # Download ArgoCD CLI (GitOps deployment tool)
-        //         curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-        //         chmod +x /usr/local/bin/argocd
-        //         '''
-        //     }
-        // }
+                # Download ArgoCD CLI (GitOps deployment tool)
+                curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+                chmod +x /usr/local/bin/argocd
+                '''
+            }
+        }
         
-        // // STAGE 7: Deploy your app to Kubernetes cluster
-        // stage('Apply Kubernetes & Sync App with ArgoCD') {
-        //     steps {
-        //         script {
-        //             // Connect to your Kubernetes cluster using stored credentials
-        //             kubeconfig(credentialsId: 'kubeconfig', serverUrl: 'https://192.168.49.2:8443') {
-        //                 sh '''
-        //                 # Login to ArgoCD (GitOps tool that manages deployments)
-        //                 argocd login 34.45.193.5:31704 --username admin --password $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d) --insecure
+        // STAGE 7: Deploy your app to Kubernetes cluster
+        stage('Apply Kubernetes & Sync App with ArgoCD') {
+            steps {
+                script {
+                    // Connect to your Kubernetes cluster using stored credentials
+                    kubeconfig(credentialsId: 'kubeconfig', serverUrl: 'https://192.168.49.2:8443') {
+                        sh '''
+                        # Login to ArgoCD (GitOps tool that manages deployments)
+                        argocd login 34.16.92.116:31704 --username admin --password $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d) --insecure
                         
-        //                 # Tell ArgoCD to sync your app (deploy the new version)
-        //                 argocd app sync study
-        //                 '''
-        //             }
-        //         }
-        //     }
-        // }
+                        # Tell ArgoCD to sync your app (deploy the new version)
+                        argocd app sync study-buddy
+                        '''
+                    }
+                }
+            }
+        }
     }
 }
 
