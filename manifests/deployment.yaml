@@ -36,7 +36,7 @@ spec:
         
         # Docker image to use - pulled from DockerHub registry
         # Format: registry/username/repository:tag
-        image: slithice/studybuddy:VERSION_PLACEHOLDER
+        image: slithice/studybuddy:v234
         
         # Ports that the container exposes
         ports:
@@ -49,5 +49,3 @@ spec:
             secretKeyRef:  # Get value from a Kubernetes Secret (secure storage)
               name: groq-api-secret  # Name of the secret object
               key: GROQ_API_KEY      # Key within the secret
-# Updated: Tue Sep  2 23:50:05 UTC 2025
-# Updated: Tue Sep  2 23:53:50 UTC 2025

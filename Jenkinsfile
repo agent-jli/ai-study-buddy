@@ -100,13 +100,6 @@ pipeline {
                         git config user.name "agent-jli"
                         git config user.email "liyike1988@gmail.com"
                         
-                        # Check if deployment.yaml was actually changed
-                        if git diff --quiet manifests/deployment.yaml; then
-                            echo "No changes in deployment.yaml, forcing commit anyway..."
-                            # Force a change by adding a comment with timestamp
-                            echo "# Updated: $(date)" >> manifests/deployment.yaml
-                        fi
-                        
                         # Add and commit the modified deployment file
                         git add manifests/deployment.yaml
                         git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
