@@ -12,18 +12,18 @@ pipeline {
     // Run this pipeline on any available Jenkins agent/worker
     agent any
     
-    // Environment variables used throughout the pipeline
-    // Think of these as "settings" that all stages can access
-    environment {
-        // Where to store your Docker image (like your app's address on DockerHub)
-        DOCKER_HUB_REPO = "slithice/studybuddy"
+    // // Environment variables used throughout the pipeline
+    // // Think of these as "settings" that all stages can access
+    // environment {
+    //     // Where to store your Docker image (like your app's address on DockerHub)
+    //     DOCKER_HUB_REPO = "slithice/studybuddy"
         
-        // Jenkins credential ID for DockerHub login (stored securely in Jenkins)
-        DOCKER_HUB_CREDENTIALS_ID = "dockerhub-token"
+    //     // Jenkins credential ID for DockerHub login (stored securely in Jenkins)
+    //     DOCKER_HUB_CREDENTIALS_ID = "dockerhub-token"
         
-        // Create unique image tags using Jenkins build number (v1, v2, v3, etc.)
-        IMAGE_TAG = "v${BUILD_NUMBER}"
-    }
+    //     // Create unique image tags using Jenkins build number (v1, v2, v3, etc.)
+    //     IMAGE_TAG = "v${BUILD_NUMBER}"
+    // }
     
     // The actual work happens in these stages (think of them as steps)
     stages {
@@ -38,31 +38,31 @@ pipeline {
             }
         }        
         
-        // STAGE 2: Build your app into a Docker container
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo 'Building Docker image...'
-                    // This reads your Dockerfile and creates a container image
-                    // Like packaging your app into a shipping container
-                    dockerImage = docker.build("${DOCKER_HUB_REPO}:${IMAGE_TAG}")
-                }
-            }
-        }
+        // // STAGE 2: Build your app into a Docker container
+        // stage('Build Docker Image') {
+        //     steps {
+        //         script {
+        //             echo 'Building Docker image...'
+        //             // This reads your Dockerfile and creates a container image
+        //             // Like packaging your app into a shipping container
+        //             dockerImage = docker.build("${DOCKER_HUB_REPO}:${IMAGE_TAG}")
+        //         }
+        //     }
+        // }
         
-        // STAGE 3: Upload the container to DockerHub (like GitHub for containers)
-        stage('Push Image to DockerHub') {
-            steps {
-                script {
-                    echo 'Pushing Docker image to DockerHub...'
-                    // Login to DockerHub and upload your container image
-                    // So Kubernetes can download it later
-                    docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_HUB_CREDENTIALS_ID}") {
-                        dockerImage.push("${IMAGE_TAG}")
-                    }
-                }
-            }
-        }
+        // // STAGE 3: Upload the container to DockerHub (like GitHub for containers)
+        // stage('Push Image to DockerHub') {
+        //     steps {
+        //         script {
+        //             echo 'Pushing Docker image to DockerHub...'
+        //             // Login to DockerHub and upload your container image
+        //             // So Kubernetes can download it later
+        //             docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_HUB_CREDENTIALS_ID}") {
+        //                 dockerImage.push("${IMAGE_TAG}")
+        //             }
+        //         }
+        //     }
+        // }
         
         // // STAGE 4: Update Kubernetes deployment file with new image version
         // stage('Update Deployment YAML with New Tag') {

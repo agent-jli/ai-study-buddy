@@ -577,17 +577,36 @@ The `config` file references files like:
 - `/home/gyrogodnon/.minikube/profiles/minikube/client.crt`
 - `/home/gyrogodnon/.minikube/profiles/minikube/client.key`
 
-We’ll **inline** the actual base64 content instead of using file paths.
+We'll **inline** the actual base64 content instead of using file paths.
 
-##### 🔁 For Each of These 3 Files, Run:
+##### 🤔 Why Do We Need Base64 Conversion?
 
-```bash
-cat /home/gyrogodnon/.minikube/ca.crt | base64 -w 0; echo
-cat /home/gyrogodnon/.minikube/profiles/minikube/client.crt | base64 -w 0; echo
-cat /home/gyrogodnon/.minikube/profiles/minikube/client.key | base64 -w 0; echo
-```
+Converting certificate files to base64 and embedding them directly solves several important issues:
 
-Copy each base64 string and replace the corresponding `certificate-authority-data`, `client-certificate-data`, and `client-key-data` fields in your config file.
+**🚀 Portability**
+- The config file becomes self-contained with no external dependencies
+- File paths like `/home/gyrogodnon/.minikube/ca.crt` are specific to your local machine
+- Moving the config to another machine/environment would break these file references
+
+**🔄 CI/CD Pipeline Compatibility**
+- Jenkins, GitHub Actions, or other CI systems can use the config seamlessly
+- No need to manage and transfer separate certificate files
+- Everything needed is contained in one portable file
+
+**📦 Container/Docker Deployment**
+- Easier to mount as a single config file in containers
+- Eliminates the need to manage multiple certificate files in container images
+- Simplifies deployment processes
+
+**🔐 Security & Management**
+- Single file to secure, backup, and manage
+- Easier to store as a Kubernetes secret or environment variable
+- Reduces the risk of missing or misplaced certificate files
+
+**📋 How It Works:**
+- Takes the binary certificate content and encodes it as a text string
+- Replaces file path references (`certificate-authority`, `client-certificate`, `client-key`) with actual certificate data (`certificate-authority-data`, `client-certificate-data`, `client-key-data`)
+- Creates a standard, portable Kubernetes configuration
 
 ---
 
@@ -709,132 +728,4 @@ kubectl create secret generic groq-api-secret \
   * Tick **Sync Pipeline Resources** and **Self Heal**.
   * Leave other settings as default.
   * **Repository URL:** select your connected repo.
-  * **Revision:** `main` (branch)
-  * **Path:** `manifests`
-  * **Cluster URL:** select from dropdown.
-  * **Namespace:** `argocd`
-* Click **Create**.
-* You should see the application status as **Synced** and **Healthy**.
-
----
-
-### Step 5: Modify Jenkinsfile to Sync ArgoCD Application
-
-* In **VS Code**, open your `Jenkinsfile`.
-* In the last stage, add the command to sync the ArgoCD app:
-
-```groovy
-sh 'argocd app sync gitopsapp'
-```
-
-> Replace `gitopsapp` with the actual name of your ArgoCD application.
-
-* Push the changes to GitHub.
-* Go to Jenkins and build the pipeline.
-* On success, you will see a success message.
-
----
-
-### Step 6: Verify ArgoCD Application and Logs
-
-* Open **ArgoCD UI**.
-* Check the application workflow.
-* View logs for each pod to verify deployment.
-
----
-
-### Step 7: Access Your Application
-
-* On your VM instance terminal, run:
-
-```bash
-kubectl get deploy -n argocd
-```
-
-* You should see your `mlops-app` deployment.
-* Check pods:
-
-```bash
-kubectl get pods -n argocd
-```
-
-* You should see your pods running.
-
----
-
-### Step 8: Allow External Access
-
-* Run the following command to create a tunnel:
-
-```bash
-minikube tunnel
-```
-
-* Open another SSH terminal and run port-forwarding:
-
-```bash
-kubectl port-forward svc/my-service -n argocd --address 0.0.0.0 9090:80
-```
-
----
-
-### Step 9: Access the Application from Browser
-
-* Copy your VM’s external IP address.
-* Open browser and go to:
-
-```
-http://<VM_EXTERNAL_IP>:9090
-```
-
-* You should see your `mlops-app` running successfully!
-
-
-# 10. Setup Webhooks
-
----
-
-### Step 1: Add Webhook in GitHub Repository
-
-1. Go to your **GitHub repo** → **Settings** → **Webhooks** → **Add webhook**.
-2. Fill in the details:
-   - **Payload URL:**  
-     `http://34.72.5.170:8080/github-webhook/`  
-     *(Replace with your Jenkins URL)*
-   - **Content type:** `application/json`
-   - **Secret:** *(Not necessary, leave blank)*
-   - **Enable SSL verification:** Enable if using HTTPS
-3. Under **Which events would you like to trigger this webhook?**  
-   - Tick **Just the push event**  
-     (This means the pipeline triggers on every push)
-4. Click **Add webhook**.
-
----
-
-### Step 2: Configure Jenkins to Receive Webhook
-
-1. Open **Jenkins** → Go to your **Pipeline** job → Click **Configure**.
-2. Scroll down to **Build Triggers**.
-3. Tick **GitHub hook trigger for GITScm polling**.
-4. Click **Apply** and **Save**.
-5. Your webhook trigger is now configured.
-
----
-
-### Step 3: Test the Webhook Trigger
-
-1. Open **VS Code**.
-2. Make a slight change in the `Jenkinsfile` (e.g., add or modify an `echo` statement for demonstration).
-3. Commit and **push** the code to GitHub.
-4. Go to Jenkins Dashboard.
-5. You should see your Jenkins pipeline **automatically triggered** and start running.
-
----
-
-### Final Outcome
-
-- Jenkins will automatically trigger ArgoCD sync as part of the pipeline.
-- This completes the full GitOps pipeline successfully and automatically!
-
----
-
+  * **Revision:** `main`
