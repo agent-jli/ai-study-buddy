@@ -9,8 +9,13 @@
 // =============================================================================
 
 pipeline {
-    // Run this pipeline on any available Jenkins agent/worker
-    agent any
+    // Use Docker agent with kubectl and other k8s tools pre-installed
+    agent {
+        docker {
+            image 'alpine/k8s:1.33.4'
+            args '--user root'
+        }
+    }
     
     // Environment variables used throughout the pipeline
     // Think of these as "settings" that all stages can access
@@ -103,23 +108,23 @@ pipeline {
             }
         }
         
-        // STAGE 6: Install tools needed to talk to Kubernetes
-        stage('Install Kubectl & ArgoCD CLI Setup') {
-            steps {
-                sh '''
-                echo 'installing Kubectl & ArgoCD cli...'
+        // // STAGE 6: Install tools needed to talk to Kubernetes
+        // stage('Install Kubectl & ArgoCD CLI Setup') {
+        //     steps {
+        //         sh '''
+        //         echo 'installing Kubectl & ArgoCD cli...'
                 
-                # Download kubectl (Kubernetes command-line tool)
-                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                chmod +x kubectl
-                mv kubectl /usr/local/bin/kubectl
+        //         # Download kubectl (Kubernetes command-line tool)
+        //         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        //         chmod +x kubectl
+        //         mv kubectl /usr/local/bin/kubectl
                 
-                # Download ArgoCD CLI (GitOps deployment tool)
-                curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-                chmod +x /usr/local/bin/argocd
-                '''
-            }
-        }
+        //         # Download ArgoCD CLI (GitOps deployment tool)
+        //         curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        //         chmod +x /usr/local/bin/argocd
+        //         '''
+        //     }
+        // }
         
         // STAGE 7: Deploy your app to Kubernetes cluster
         stage('Apply Kubernetes & Sync App with ArgoCD') {
@@ -128,6 +133,10 @@ pipeline {
                     // Connect to your Kubernetes cluster using stored credentials
                     kubeconfig(credentialsId: 'kubeconfig', serverUrl: 'https://192.168.49.2:8443') {
                         sh '''
+                        # Install ArgoCD CLI (kubectl already available in alpine/k8s image)
+                        curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+                        chmod +x /usr/local/bin/argocd
+                        
                         # Login to ArgoCD (GitOps tool that manages deployments)
                         argocd login 34.16.92.116:31704 --username admin --password $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d) --insecure
                         
