@@ -76,10 +76,10 @@ pipeline {
                     // Replace the old image tag with the new one in deployment.yaml
                     // This tells Kubernetes which version of your app to run
                     sh '''
-                    echo "Updating image tag from VERSION_PLACEHOLDER to ${IMAGE_TAG}"
+                    echo "Updating image tag to ${IMAGE_TAG}"
                     
-                    # Simple placeholder replacement
-                    sed -i "s|VERSION_PLACEHOLDER|${IMAGE_TAG}|g" manifests/deployment.yaml
+                    # Replace any existing image tag with new one
+                    sed -i "s|image: slithice/studybuddy:.*|image: slithice/studybuddy:${IMAGE_TAG}|g" manifests/deployment.yaml
                     
                     echo "Updated deployment.yaml:"
                     grep "image: slithice/studybuddy" manifests/deployment.yaml
@@ -114,11 +114,8 @@ pipeline {
                         # Push back to GitHub main branch
                         git push https://${GIT_USER}:${GIT_PASS}@github.com/agent-jli/ai-study-buddy.git HEAD:main
                         
-                        # Restore placeholder for next pipeline run
-                        echo "Restoring VERSION_PLACEHOLDER for next run..."
-                        sed -i "s|${IMAGE_TAG}|VERSION_PLACEHOLDER|g" manifests/deployment.yaml
-                        # Remove the timestamp comment if it was added
-                        sed -i "/# Updated:/d" manifests/deployment.yaml
+                        # Don't restore placeholder - ArgoCD needs to see the actual image tag
+                        echo "Deployment updated with ${IMAGE_TAG} - ArgoCD will sync this version"
                         '''
                     }
                 }
