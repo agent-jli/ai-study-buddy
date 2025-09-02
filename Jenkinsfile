@@ -108,24 +108,6 @@ pipeline {
             }
         }
         
-        // // STAGE 6: Install tools needed to talk to Kubernetes
-        // stage('Install Kubectl & ArgoCD CLI Setup') {
-        //     steps {
-        //         sh '''
-        //         echo 'installing Kubectl & ArgoCD cli...'
-                
-        //         # Download kubectl (Kubernetes command-line tool)
-        //         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        //         chmod +x kubectl
-        //         mv kubectl /usr/local/bin/kubectl
-                
-        //         # Download ArgoCD CLI (GitOps deployment tool)
-        //         curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-        //         chmod +x /usr/local/bin/argocd
-        //         '''
-        //     }
-        // }
-        
         // STAGE 7: Deploy your app to Kubernetes cluster
         stage('Apply Kubernetes & Sync App with ArgoCD') {
             agent {
