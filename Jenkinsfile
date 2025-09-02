@@ -131,7 +131,7 @@ pipeline {
             agent {
                 docker {
                     image 'alpine/k8s:1.33.4'
-                    args '--user root'
+                    args '--user root --network host'
                 }
             }
             steps {
