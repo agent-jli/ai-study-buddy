@@ -75,9 +75,15 @@ pipeline {
                 script {
                     // Replace the old image tag with the new one in deployment.yaml
                     // This tells Kubernetes which version of your app to run
-                    sh """
-                    sed -i 's|image: slithice/studybuddy:.*|image: slithice/studybuddy:${IMAGE_TAG}|' manifests/deployment.yaml
-                    """
+                    sh '''
+                    echo "Updating image tag from VERSION_PLACEHOLDER to ${IMAGE_TAG}"
+                    
+                    # Simple placeholder replacement
+                    sed -i "s|VERSION_PLACEHOLDER|${IMAGE_TAG}|g" manifests/deployment.yaml
+                    
+                    echo "Updated deployment.yaml:"
+                    grep "image: slithice/studybuddy" manifests/deployment.yaml
+                    '''
                 }
             }
         }
@@ -102,6 +108,10 @@ pipeline {
                         
                         # Push back to GitHub main branch
                         git push https://${GIT_USER}:${GIT_PASS}@github.com/agent-jli/ai-study-buddy.git HEAD:main
+                        
+                        # Restore placeholder for next pipeline run
+                        echo "Restoring VERSION_PLACEHOLDER for next run..."
+                        sed -i "s|${IMAGE_TAG}|VERSION_PLACEHOLDER|g" manifests/deployment.yaml
                         '''
                     }
                 }
@@ -128,8 +138,16 @@ pipeline {
                         # Login to ArgoCD (GitOps tool that manages deployments)
                         argocd login 34.16.92.116:31704 --username admin --password $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d) --insecure
                         
-                        # Tell ArgoCD to sync your app (deploy the new version)
+                        # Force ArgoCD to refresh and sync the app (deploy the new version)
+                        echo "Refreshing ArgoCD app..."
+                        argocd app refresh study-buddy --hard-refresh
+                        
+                        echo "Syncing ArgoCD app..."
                         argocd app sync study-buddy
+                        
+                        echo "Checking deployment status..."
+                        kubectl get deployment llmops-app -n argocd -o wide
+                        kubectl get pods -n argocd -l app=llmops-app
                         '''
                     }
                 }
