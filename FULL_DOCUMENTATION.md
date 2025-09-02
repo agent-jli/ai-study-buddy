@@ -729,3 +729,131 @@ kubectl create secret generic groq-api-secret \
   * Leave other settings as default.
   * **Repository URL:** select your connected repo.
   * **Revision:** `main`
+
+  * **Path:** `manifests`
+  * **Cluster URL:** select from dropdown.
+  * **Namespace:** `argocd`
+* Click **Create**.
+* You should see the application status as **Synced** and **Healthy**.
+
+---
+
+### Step 5: Modify Jenkinsfile to Sync ArgoCD Application
+
+* In **VS Code**, open your `Jenkinsfile`.
+* In the last stage, add the command to sync the ArgoCD app:
+
+```groovy
+sh 'argocd app sync gitopsapp'
+```
+
+> Replace `gitopsapp` with the actual name of your ArgoCD application.
+
+* Push the changes to GitHub.
+* Go to Jenkins and build the pipeline.
+* On success, you will see a success message.
+
+---
+
+### Step 6: Verify ArgoCD Application and Logs
+
+* Open **ArgoCD UI**.
+* Check the application workflow.
+* View logs for each pod to verify deployment.
+
+---
+
+### Step 7: Access Your Application
+
+* On your VM instance terminal, run:
+
+```bash
+kubectl get deploy -n argocd
+```
+
+* You should see your `mlops-app` deployment.
+* Check pods:
+
+```bash
+kubectl get pods -n argocd
+```
+
+* You should see your pods running.
+
+---
+
+### Step 8: Allow External Access
+
+* Run the following command to create a tunnel:
+
+```bash
+minikube tunnel
+```
+
+* Open another SSH terminal and run port-forwarding:
+
+```bash
+kubectl port-forward svc/my-service -n argocd --address 0.0.0.0 9090:80
+```
+
+---
+
+### Step 9: Access the Application from Browser
+
+* Copy your VM’s external IP address.
+* Open browser and go to:
+
+```
+http://<VM_EXTERNAL_IP>:9090
+```
+
+* You should see your `mlops-app` running successfully!
+
+
+# 10. Setup Webhooks
+
+---
+
+### Step 1: Add Webhook in GitHub Repository
+
+1. Go to your **GitHub repo** → **Settings** → **Webhooks** → **Add webhook**.
+2. Fill in the details:
+   - **Payload URL:**  
+     `http://34.72.5.170:8080/github-webhook/`  
+     *(Replace with your Jenkins URL)*
+   - **Content type:** `application/json`
+   - **Secret:** *(Not necessary, leave blank)*
+   - **Enable SSL verification:** Enable if using HTTPS
+3. Under **Which events would you like to trigger this webhook?**  
+   - Tick **Just the push event**  
+     (This means the pipeline triggers on every push)
+4. Click **Add webhook**.
+
+---
+
+### Step 2: Configure Jenkins to Receive Webhook
+
+1. Open **Jenkins** → Go to your **Pipeline** job → Click **Configure**.
+2. Scroll down to **Build Triggers**.
+3. Tick **GitHub hook trigger for GITScm polling**.
+4. Click **Apply** and **Save**.
+5. Your webhook trigger is now configured.
+
+---
+
+### Step 3: Test the Webhook Trigger
+
+1. Open **VS Code**.
+2. Make a slight change in the `Jenkinsfile` (e.g., add or modify an `echo` statement for demonstration).
+3. Commit and **push** the code to GitHub.
+4. Go to Jenkins Dashboard.
+5. You should see your Jenkins pipeline **automatically triggered** and start running.
+
+---
+
+### Final Outcome
+
+- Jenkins will automatically trigger ArgoCD sync as part of the pipeline.
+- This completes the full GitOps pipeline successfully and automatically!
+
+---
