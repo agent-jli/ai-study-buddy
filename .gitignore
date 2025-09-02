@@ -23,3 +23,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Kubernetes binaries (prevent accidental commits)
+kubectl
+argocd
