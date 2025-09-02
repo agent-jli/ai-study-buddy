@@ -152,6 +152,10 @@ pipeline {
                         echo "Checking deployment status..."
                         kubectl get deployment llmops-app -n argocd -o wide
                         kubectl get pods -n argocd -l app=llmops-app
+                        
+                        echo "Force rolling restart to ensure new image is used..."
+                        kubectl rollout restart deployment/llmops-app -n argocd
+                        kubectl rollout status deployment/llmops-app -n argocd
                         '''
                     }
                 }
