@@ -100,11 +100,16 @@ pipeline {
                         git config user.name "agent-jli"
                         git config user.email "liyike1988@gmail.com"
                         
-                        # Add the modified deployment file
-                        git add manifests/deployment.yaml
+                        # Check if deployment.yaml was actually changed
+                        if git diff --quiet manifests/deployment.yaml; then
+                            echo "No changes in deployment.yaml, forcing commit anyway..."
+                            # Force a change by adding a comment with timestamp
+                            echo "# Updated: $(date)" >> manifests/deployment.yaml
+                        fi
                         
-                        # Commit with a descriptive message (skip CI to avoid triggering new builds)
-                        git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
+                        # Add and commit the modified deployment file
+                        git add manifests/deployment.yaml
+                        git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
                         
                         # Push back to GitHub main branch
                         git push https://${GIT_USER}:${GIT_PASS}@github.com/agent-jli/ai-study-buddy.git HEAD:main
@@ -112,6 +117,8 @@ pipeline {
                         # Restore placeholder for next pipeline run
                         echo "Restoring VERSION_PLACEHOLDER for next run..."
                         sed -i "s|${IMAGE_TAG}|VERSION_PLACEHOLDER|g" manifests/deployment.yaml
+                        # Remove the timestamp comment if it was added
+                        sed -i "/# Updated:/d" manifests/deployment.yaml
                         '''
                     }
                 }
@@ -140,10 +147,10 @@ pipeline {
                         
                         # Force ArgoCD to refresh and sync the app (deploy the new version)
                         echo "Refreshing ArgoCD app..."
-                        argocd app refresh study-buddy --hard-refresh
+                        argocd app refresh study-buddy
                         
                         echo "Syncing ArgoCD app..."
-                        argocd app sync study-buddy
+                        argocd app sync study-buddy --force
                         
                         echo "Checking deployment status..."
                         kubectl get deployment llmops-app -n argocd -o wide
