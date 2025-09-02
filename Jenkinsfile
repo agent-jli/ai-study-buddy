@@ -145,12 +145,12 @@ pipeline {
                         # Login to ArgoCD (GitOps tool that manages deployments)
                         argocd login 34.16.92.116:31704 --username admin --password $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d) --insecure
                         
-                        # Force ArgoCD to refresh and sync the app (deploy the new version)
-                        echo "Refreshing ArgoCD app..."
-                        argocd app refresh study-buddy
-                        
+                        # Sync the app with ArgoCD (deploy the new version)
                         echo "Syncing ArgoCD app..."
-                        argocd app sync study-buddy --force
+                        argocd app sync study-buddy
+                        
+                        echo "Checking sync status..."
+                        argocd app get study-buddy
                         
                         echo "Checking deployment status..."
                         kubectl get deployment llmops-app -n argocd -o wide
