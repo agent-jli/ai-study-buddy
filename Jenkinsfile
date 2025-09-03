@@ -68,37 +68,19 @@ pipeline {
             }
         }
         
-        // STAGE 4: Update Kubernetes deployment file with new image version
-        stage('Update Deployment YAML with New Tag') {
+        // STAGE 4 & 5: Update and Commit Deployment YAML (combined to preserve changes)
+        stage('Update and Commit Deployment YAML') {
             agent any
             steps {
                 script {
                     // Replace the old image tag with the new one in deployment.yaml
-                    // This tells Kubernetes which version of your app to run
                     sh '''
-                    echo "=== BEFORE SED ==="
-                    echo "Current image line:"
-                    grep "image: slithice/studybuddy" manifests/deployment.yaml
-                    
-                    echo "=== RUNNING SED ==="
                     echo "Updating image tag to ${IMAGE_TAG}"
                     sed -i "s|image: slithice/studybuddy:.*|image: slithice/studybuddy:${IMAGE_TAG}|g" manifests/deployment.yaml
-                    
-                    echo "=== AFTER SED ==="
-                    echo "Updated image line:"
+                    echo "Updated deployment.yaml:"
                     grep "image: slithice/studybuddy" manifests/deployment.yaml
-                    
-                    echo "=== FILE CONTENT CHECK ==="
-                    cat manifests/deployment.yaml | grep -A2 -B2 "image:"
                     '''
-                }
-            }
-        }
-
-        // STAGE 5: Save the updated deployment file back to GitHub
-        stage('Commit Updated YAML') {
-            steps {
-                script {
+                    
                     // Use GitHub credentials to push changes back to your repo
                     withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                         sh '''
