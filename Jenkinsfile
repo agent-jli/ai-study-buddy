@@ -99,7 +99,7 @@ pipeline {
                         git diff --cached manifests/deployment.yaml
                         
                         # Commit the change
-                        git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
+                        git commit -m "Update image tag to ${IMAGE_TAG} ***NO_CI***"
                         
                         # Push back to GitHub main branch
                         git push https://${GIT_USER}:${GIT_PASS}@github.com/agent-jli/ai-study-buddy.git HEAD:main
