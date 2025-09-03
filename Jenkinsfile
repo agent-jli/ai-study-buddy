@@ -76,13 +76,20 @@ pipeline {
                     // Replace the old image tag with the new one in deployment.yaml
                     // This tells Kubernetes which version of your app to run
                     sh '''
-                    echo "Updating image tag to ${IMAGE_TAG}"
+                    echo "=== BEFORE SED ==="
+                    echo "Current image line:"
+                    grep "image: slithice/studybuddy" manifests/deployment.yaml
                     
-                    # Replace any existing image tag with new one
+                    echo "=== RUNNING SED ==="
+                    echo "Updating image tag to ${IMAGE_TAG}"
                     sed -i "s|image: slithice/studybuddy:.*|image: slithice/studybuddy:${IMAGE_TAG}|g" manifests/deployment.yaml
                     
-                    echo "Updated deployment.yaml:"
+                    echo "=== AFTER SED ==="
+                    echo "Updated image line:"
                     grep "image: slithice/studybuddy" manifests/deployment.yaml
+                    
+                    echo "=== FILE CONTENT CHECK ==="
+                    cat manifests/deployment.yaml | grep -A2 -B2 "image:"
                     '''
                 }
             }
