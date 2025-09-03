@@ -36,7 +36,7 @@ spec:
         
         # Docker image to use - pulled from DockerHub registry
         # Format: registry/username/repository:tag
-        image: slithice/studybuddy:v234
+        image: slithice/studybuddy:v241
         
         # Ports that the container exposes
         ports:
