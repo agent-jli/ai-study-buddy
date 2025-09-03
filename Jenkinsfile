@@ -97,7 +97,6 @@ pipeline {
 
         // STAGE 5: Save the updated deployment file back to GitHub
         stage('Commit Updated YAML') {
-            agent any
             steps {
                 script {
                     // Use GitHub credentials to push changes back to your repo
