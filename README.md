@@ -2,6 +2,8 @@
 
 AI-powered quiz generator that creates multiple choice and fill-in-the-blank questions using Groq's LLM API.
 
+![AI Study Buddy Screenshot](images/Snapshot.png)
+
 ## Features
 - Generate MCQ and fill-in-the-blank questions
 - Multiple difficulty levels  
